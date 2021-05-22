@@ -1,0 +1,6 @@
+FROM ubuntu:latest
+
+COPY ./tor-proxy /
+EXPOSE 8000
+
+ENTRYPOINT [ "./tor-proxy" ]

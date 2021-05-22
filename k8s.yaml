@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tor-proxy
+  labels:
+    app: tor-proxy
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: tor-proxy
+  template:
+    metadata:
+      labels:
+        app: tor-proxy
+    spec:
+      containers:
+      - name: tor-proxy
+        image: tor-proxy:latest
+        ports:
+        - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tor-proxy-service
+spec:
+  selector:
+    app: tor-proxy
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
