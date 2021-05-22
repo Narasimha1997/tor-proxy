@@ -1,5 +1,5 @@
 ## tor-proxy
-An experimental standalone tor-proxy service built using Go, using go-proxy and go-libtor and bine. This is a simple replacement to Tor's original tor-proxy. (Since this is experimental, I would still recommend to use the original Tor-proxy)
+An experimental standalone tor-proxy service built using Go, using go-proxy, go-libtor and bine. This is a simple replacement to Tor's original tor-proxy. (Since this is experimental, I would still recommend to use the original Tor-proxy)
 
 ### What this is for?
 As you all know Tor is an anonymous network used to provide anonymous (tracking free) end-to-end network connectivity for users. In other words Tor network encrypts your IP with multiple layers such that the identity of the source cannot be determined anymore. Because of this capability of Tor, it is the de-facto network for hosting Dark-Web sites with almost 100% anonymity, clients use Tor browser to access these sites, usually those sites ending with `.onion`. Apart from this, Tor network can also provide anynomity while accessing normal HTTP/s sites. Using this prox, you can:
