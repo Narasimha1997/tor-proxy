@@ -20,6 +20,7 @@ As you all know Tor is an anonymous network used to provide anonymous (tracking 
 #### 1. Install Locally (Not recommended)
 Local installation requires a properly configured Go environment to be working and must be supporting Go modules. Just clone this repository:
 ```
+git clone git@github.com:Narasimha1997/tor-proxy.git
 ```
 Then run:
 ```
