@@ -9,11 +9,11 @@ import (
 func getProxyProtocol() string {
 	protocol, ok := os.LookupEnv("PROXY_PROTOCOL")
 	if !ok {
-		protocol = "socks5"
+		protocol = "http"
 	}
 
-	if protocol != "socks5" && protocol != "http" {
-		protocol = "socks5"
+	if protocol != "http" && protocol != "socks5" {
+		protocol = "http"
 	}
 
 	return protocol
