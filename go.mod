@@ -9,4 +9,6 @@ require (
 	golang.org/x/net v0.0.0-20210521195947-fe42d452be8f // indirect
 	golang.org/x/sys v0.0.0-20210521203332-0cec03c779c1 // indirect
 	gopkg.in/elazarl/goproxy.v1 v1.0.0-20180725130230-947c36da3153
+	github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5
+
 )

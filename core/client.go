@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/armon/go-socks5"
 	"github.com/cretz/bine/tor"
 	"github.com/ipsn/go-libtor"
 	"gopkg.in/elazarl/goproxy.v1"
@@ -24,7 +25,7 @@ type TorHandle struct {
 }
 
 // initTorHandle Create and return a pointer to new TorHandle
-func initTorHandle() *TorHandle {
+func initTorHandle(initHTTPTransport bool) *TorHandle {
 
 	ctx := context.Background()
 	torCtx, err := tor.Start(
@@ -46,10 +47,12 @@ func initTorHandle() *TorHandle {
 
 	torHandle.torDialer = dialer
 
-	torHandle.torTransport = &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		Proxy:           http.ProxyFromEnvironment,
-		DialContext:     torHandle.torDialer.DialContext,
+	if initHTTPTransport {
+		torHandle.torTransport = &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			Proxy:           http.ProxyFromEnvironment,
+			DialContext:     torHandle.torDialer.DialContext,
+		}
 	}
 
 	log.Println("Prepared Tor Handle")
@@ -65,11 +68,12 @@ func clearHandle(torHandle *TorHandle) {
 	}
 }
 
+// HTTPServing Type definition for HTTPServing
 type HTTPServing struct{}
 
 func (httpProxy *HTTPServing) getProxy() (*goproxy.ProxyHttpServer, *TorHandle) {
 	proxy := goproxy.NewProxyHttpServer()
-	tcx := initTorHandle()
+	tcx := initTorHandle(true)
 
 	proxy.Tr = tcx.torTransport
 	proxy.ConnectDial = tcx.torTransport.Dial
@@ -93,5 +97,76 @@ func (httpProxy *HTTPServing) ListenAndServe() {
 
 	if err != nil {
 		log.Fatalf("Failed to start proxy server on %s, reason - %v\n", port, err)
+	}
+}
+
+// Socks5Serving Type definition for Socks5 server
+type Socks5Serving struct{}
+type ProxyAuthParams struct {
+	username string
+	password string
+}
+
+func (sserver *Socks5Serving) getAuthParams() *ProxyAuthParams {
+
+	usernameEnv, ok := os.LookupEnv("PROXY_USERNAME")
+	if !ok {
+		usernameEnv = ""
+	}
+
+	passwordEnv, ok := os.LookupEnv("PROXY_PASSWORD")
+	if !ok {
+		passwordEnv = ""
+		usernameEnv = ""
+	}
+
+	return &ProxyAuthParams{
+		username: usernameEnv,
+		password: passwordEnv,
+	}
+}
+
+func (sserver *Socks5Serving) setTorDialer(config *socks5.Config) *TorHandle {
+	tcx := initTorHandle(false)
+	config.Dial = tcx.torDialer.DialContext
+
+	return tcx
+}
+
+func (sserver *Socks5Serving) ListenAndServe() {
+	socks5Config := socks5.Config{
+		Logger: log.New(os.Stdin, "", log.LstdFlags),
+	}
+
+	// get auth parameters from env:
+	authParams := sserver.getAuthParams()
+	if authParams.username != "" {
+		socks5Config.AuthMethods = []socks5.Authenticator{
+			socks5.UserPassAuthenticator{Credentials: socks5.StaticCredentials{
+				authParams.username: authParams.password,
+			}},
+		}
+	}
+
+	// set TorHandle
+	torHandle := sserver.setTorDialer(&socks5Config)
+	defer clearHandle(torHandle)
+
+	// create the server object
+	server, err := socks5.New(&socks5Config)
+
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	// start the server on default Port or custom provided port
+	port, ok := os.LookupEnv("PROXY_PORT")
+	if !ok {
+		port = DefaultProxyPort
+	}
+
+	err = server.ListenAndServe("tcp", fmt.Sprintf(":%s", port))
+	if err != nil {
+		log.Fatalln(err)
 	}
 }
