@@ -5,5 +5,6 @@ import (
 )
 
 func main() {
-	core.ListenAndServe()
+	httpServing := core.HTTPServing{}
+	httpServing.ListenAndServe()
 }

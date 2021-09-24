@@ -44,7 +44,7 @@ First, follow step-1.
 You can just place the pre-built go binary inside a container and execute it normally. `Dockerfile_binary` has the steps for this, just use this dockerfile to build the container image:
 
 ```
-docker build . -f Dockerfile -t tor-proxy:latest
+docker build . -f Dockerfile_binary -t tor-proxy:latest
 ```
 
 #### 2b. Build and run completely in a container environment:

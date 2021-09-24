@@ -65,8 +65,9 @@ func clearHandle(torHandle *TorHandle) {
 	}
 }
 
-// GetProxy Starts a go proxy server
-func GetProxy() (*goproxy.ProxyHttpServer, *TorHandle) {
+type HTTPServing struct{}
+
+func (httpProxy *HTTPServing) getProxy() (*goproxy.ProxyHttpServer, *TorHandle) {
 	proxy := goproxy.NewProxyHttpServer()
 	tcx := initTorHandle()
 
@@ -78,13 +79,13 @@ func GetProxy() (*goproxy.ProxyHttpServer, *TorHandle) {
 }
 
 // ListenAndServe start http-proxy server on a given port
-func ListenAndServe() {
+func (httpProxy *HTTPServing) ListenAndServe() {
 	port, exists := os.LookupEnv("PROXY_PORT")
 	if !exists {
 		port = DefaultProxyPort
 	}
 
-	proxy, tcx := GetProxy()
+	proxy, tcx := httpProxy.getProxy()
 	defer clearHandle(tcx)
 
 	listenString := fmt.Sprintf(":%s", port)
